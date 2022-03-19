@@ -9,6 +9,10 @@ import {
 } from './Searchbar.styled';
 
 export default class Searchbar extends Component {
+  static propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+  };
+
   state = {
     searchQuery: '',
   };
@@ -51,7 +55,3 @@ export default class Searchbar extends Component {
     );
   }
 }
-
-Searchbar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};

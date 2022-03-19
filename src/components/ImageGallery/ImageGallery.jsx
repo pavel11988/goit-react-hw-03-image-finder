@@ -15,6 +15,11 @@ import {
 const imageApi = new PixabayApiService();
 
 export default class ImageGallery extends Component {
+  static propTypes = {
+    searchQuery: PropTypes.string.isRequired,
+    getUrlLarge: PropTypes.func.isRequired,
+  };
+
   state = {
     imagesArray: [],
     error: null,
@@ -129,8 +134,3 @@ export default class ImageGallery extends Component {
     }
   }
 }
-
-ImageGallery.propTypes = {
-  searchQuery: PropTypes.string.isRequired,
-  getUrlLarge: PropTypes.func.isRequired,
-};
