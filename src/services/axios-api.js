@@ -21,11 +21,12 @@ export default class PixabayApiService {
       },
     };
 
-    const serchResult = await axios(options);
+    const searchResult = await axios(options);
     this.pages = Math.ceil(
-      serchResult.data.totalHits / options.params.per_page
+      searchResult.data.totalHits / options.params.per_page
     );
-    return serchResult.data;
+
+    return searchResult.data;
   }
 
   incrementPage() {
@@ -45,7 +46,7 @@ export default class PixabayApiService {
   }
 
   notLastPage() {
-    return this.getPages() !== this.getPage();
+    return this.pages !== this.page;
   }
 
   setQuery(newQuery) {

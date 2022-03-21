@@ -4,7 +4,6 @@ import Button from 'components/Button/Button';
 import ImageError from 'components/ImageError/ImageError';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 import Loader from '../Loader/Loader';
-import PixabayApiService from 'services/axios-api';
 
 import {
   ImageGalleryContainer,
@@ -12,83 +11,25 @@ import {
   Idle,
 } from './ImageGallery.styled';
 
-const imageApi = new PixabayApiService();
-
 export default class ImageGallery extends Component {
   static propTypes = {
-    searchQuery: PropTypes.string.isRequired,
     getUrlLarge: PropTypes.func.isRequired,
+    imagesArray: PropTypes.arrayOf(PropTypes.object).isRequired,
+    status: PropTypes.string.isRequired,
+    loadMore: PropTypes.func.isRequired,
+    error: PropTypes.object,
   };
-
-  state = {
-    imagesArray: [],
-    error: null,
-    status: 'idle',
-    newSearch: true,
-  };
-
-  componentDidUpdate(prevProps) {
-    //В componentDidUpdate - все только через проверки.
-
-    const prevSearchQuery = prevProps.searchQuery;
-    const nextSearchQuery = this.props.searchQuery;
-
-    if (prevSearchQuery !== nextSearchQuery) {
-      this.setState({
-        imagesArray: [],
-        error: null,
-        page: 1,
-        pages: 0,
-        status: 'pending',
-        newSearch: true,
-      });
-      imageApi.resetPage();
-      imageApi.setQuery(nextSearchQuery);
-      this.fetchToApi();
-    }
-  }
-
-  loadMore = e => {
-    e.preventDefault();
-    imageApi.incrementPage();
-    this.setState({
-      newSearch: false,
-      status: 'pending',
-    });
-    this.fetchToApi();
-  };
-
-  fetchToApi() {
-    const nextSearchQuery = this.props.searchQuery;
-    imageApi
-      .fetchOfQuery()
-      .then(imagesArray => {
-        //Проверяем массив, который нам вернул API на пустоту:
-        if (imagesArray.hits.length !== 0) {
-          return this.setState(prevState => ({
-            imagesArray: [...prevState.imagesArray, ...imagesArray.hits],
-            status: 'resolved',
-          }));
-        }
-        //Если API вернул пустой массив - делаем ошибку:
-        return Promise.reject(
-          new Error(
-            `No images found for your query "${nextSearchQuery.trim()}"`
-          )
-        );
-      })
-      .catch(error => this.setState({ error, status: 'rejected' }));
-  }
 
   render() {
-    const { imagesArray, error, status, newSearch } = this.state;
+    const { getUrlLarge, imagesArray, status, loadMore, error, notLastPage } =
+      this.props;
 
     if (status === 'idle') {
       return <Idle>Please, enter your request.</Idle>;
     }
 
     if (status === 'pending') {
-      if (newSearch === false) {
+      if (imagesArray.length !== 0) {
         return (
           <ImageGalleryContainer>
             <ImageGalleryList className="gallery">
@@ -98,7 +39,7 @@ export default class ImageGallery extends Component {
                   webformatURL={item.webformatURL}
                   large={item.largeImageURL}
                   tags={item.tags}
-                  getUrlLarge={this.props.getUrlLarge}
+                  getUrlLarge={getUrlLarge}
                 />
               ))}
             </ImageGalleryList>
@@ -106,7 +47,7 @@ export default class ImageGallery extends Component {
           </ImageGalleryContainer>
         );
       }
-      if (newSearch === true) return <Loader />;
+      if (imagesArray.length === 0) return <Loader />;
     }
 
     if (status === 'rejected') {
@@ -128,7 +69,7 @@ export default class ImageGallery extends Component {
             ))}
           </ImageGalleryList>
 
-          {imageApi.notLastPage && <Button loadMore={this.loadMore} />}
+          {notLastPage && <Button loadMore={loadMore} />}
         </ImageGalleryContainer>
       );
     }
