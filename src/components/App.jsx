@@ -89,7 +89,6 @@ export default class App extends Component {
     imageApi
       .fetchOfQuery()
       .then(newImagesArray => {
-        console.log(newImagesArray);
         //Проверяем массив, который нам вернул API на пустоту:
         if (newImagesArray.length !== 0) {
           return this.setState(prevState => ({
