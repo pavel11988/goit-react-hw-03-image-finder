@@ -1,10 +1,16 @@
 import { Component } from 'react';
 import ImageGallery from './ImageGallery/ImageGallery';
+import Button from 'components/Button/Button';
 import Modal from './Modal/Modal';
 import Searchbar from './Searchbar/Searchbar';
 import PixabayApiService from 'services/axios-api';
+import ImageError from 'components/ImageError/ImageError';
 
-import { AppContainer } from './App.styled';
+import { ImageGalleryContainer } from './ImageGallery/ImageGallery.styled'; //в апп
+
+import Loader from './Loader/Loader';
+
+import { AppContainer, Idle } from './App.styled';
 
 const imageApi = new PixabayApiService();
 
@@ -19,43 +25,48 @@ export default class App extends Component {
       largeUrl: '',
       alt: '',
     },
-    newSearch: true,
+    page: 1,
   };
 
   handleSearchQuerySubmit = searchQuery => {
-    this.setState({ searchQuery: searchQuery, newSearch: true });
+    this.setState({
+      searchQuery: searchQuery,
+      page: 1,
+    });
   };
 
-  componentDidUpdate(prevState) {
-    //В componentDidUpdate - все только через проверки.
-    // const prevSearchQuery = prevState.searchQuery;
+  componentDidUpdate(prevProps, prevState) {
+    const prevSearchQuery = prevState.searchQuery;
     const nextSearchQuery = this.state.searchQuery;
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
 
-    // console.log(prevState.searchQuery);
-    // console.log(this.state.searchQuery);
-
-    if (this.state.newSearch === true) {
+    if (prevSearchQuery !== nextSearchQuery) {
       this.setState({
         imagesArray: [],
         error: null,
         status: 'pending',
-        newSearch: false,
+        page: 1,
       });
-
-      imageApi.resetPage();
       imageApi.setQuery(nextSearchQuery);
+      imageApi.setPage(nextPage);
+
+      this.fetchToApi();
+    }
+
+    if (nextPage !== 1 && prevPage !== nextPage) {
+      imageApi.setPage(nextPage);
       this.fetchToApi();
     }
   }
 
   loadMore = e => {
     e.preventDefault();
-    imageApi.incrementPage();
-    this.setState({
-      newSearch: false,
+
+    this.setState(prevState => ({
+      page: prevState.page + 1,
       status: 'pending',
-    });
-    this.fetchToApi();
+    }));
   };
 
   toggleModal = (largeUrl, alt) => {
@@ -75,40 +86,71 @@ export default class App extends Component {
 
   fetchToApi() {
     const nextSearchQuery = this.state.searchQuery;
-    imageApi
-      .fetchOfQuery()
-      .then(newImagesArray => {
-        //Проверяем массив, который нам вернул API на пустоту:
-        if (newImagesArray.hits.length !== 0) {
-          return this.setState(prevState => ({
-            imagesArray: [...prevState.imagesArray, ...newImagesArray.hits],
-            status: 'resolved',
-          }));
-        }
-        //Если API вернул пустой массив - делаем ошибку:
-        return Promise.reject(
-          new Error(
-            `No images found for your query "${nextSearchQuery.trim()}"`
-          )
-        );
-      })
-      .catch(error => this.setState({ error, status: 'rejected' }));
+    setTimeout(() => {
+      imageApi
+        .fetchOfQuery()
+        .then(newImagesArray => {
+          console.log(newImagesArray);
+          //Проверяем массив, который нам вернул API на пустоту:
+          if (newImagesArray.length !== 0) {
+            return this.setState(prevState => ({
+              imagesArray: [...prevState.imagesArray, ...newImagesArray],
+              status: 'resolved',
+            }));
+          }
+          //Если API вернул пустой массив - делаем ошибку:
+          return Promise.reject(
+            new Error(
+              `No images found for your query "${nextSearchQuery.trim()}"`
+            )
+          );
+        })
+        .catch(error => this.setState({ error, status: 'rejected' }));
+    }, 500);
   }
 
   render() {
     const { showModal, status, imagesArray, error, largeImage } = this.state;
+    let gallery;
+
+    if (status === 'idle') {
+      gallery = <Idle>Please, enter your request.</Idle>;
+    }
+
+    if (status === 'pending') {
+      if (imagesArray.length !== 0) gallery = <Loader />;
+
+      gallery = (
+        <ImageGalleryContainer>
+          <ImageGallery
+            getUrlLarge={this.toggleModal}
+            imagesArray={imagesArray}
+          />
+          <Loader />
+        </ImageGalleryContainer>
+      );
+    }
+
+    if (status === 'rejected') {
+      gallery = <ImageError message={error.message} />;
+    }
+
+    if (status === 'resolved') {
+      gallery = (
+        <ImageGallery
+          getUrlLarge={this.toggleModal}
+          imagesArray={imagesArray}
+        />
+      );
+    }
 
     return (
       <AppContainer>
         <Searchbar onSubmit={this.handleSearchQuerySubmit} />
-        <ImageGallery
-          getUrlLarge={this.toggleModal}
-          imagesArray={imagesArray}
-          status={status}
-          loadMore={this.loadMore}
-          error={error}
-          notLastPage={imageApi.notLastPage()}
-        />
+        {gallery}
+        {imageApi.notLastPage() && status === 'resolved' && (
+          <Button loadMore={this.loadMore} />
+        )}
         {showModal && (
           <Modal
             largeUrl={largeImage.largeUrl}

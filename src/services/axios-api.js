@@ -20,13 +20,21 @@ export default class PixabayApiService {
         orientation: 'horizontal',
       },
     };
-
     const searchResult = await axios(options);
     this.pages = Math.ceil(
       searchResult.data.totalHits / options.params.per_page
     );
 
-    return searchResult.data;
+    const imagesArr = searchResult.data.hits.map(item => {
+      return {
+        id: item.id,
+        webformatURL: item.webformatURL,
+        largeImageURL: item.largeImageURL,
+        tags: item.tags,
+      };
+    });
+
+    return imagesArr;
   }
 
   incrementPage() {
@@ -45,11 +53,15 @@ export default class PixabayApiService {
     return this.page;
   }
 
-  notLastPage() {
-    return this.pages !== this.page;
+  setPage(newPage) {
+    this.page = newPage;
   }
 
   setQuery(newQuery) {
     this.searchQuery = newQuery;
+  }
+
+  notLastPage() {
+    return this.pages !== this.page;
   }
 }

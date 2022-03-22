@@ -2,8 +2,10 @@ import styled from '@emotion/styled';
 
 export const LoaderContainer = styled.div`
   display: block;
-  margin: 20px auto;
+  margin-left: auto;
+  margin-right: auto;
   height: 50px;
   width: 50px;
-  margin-bottom: 35px;
+  margin-top: 25px;
+  margin-bottom: 25px;
 `;

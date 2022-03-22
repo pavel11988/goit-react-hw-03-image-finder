@@ -8,7 +8,7 @@ export const SearchbarContainer = styled.header`
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 64px;
+  min-height: 34px;
   padding-right: 24px;
   padding-left: 24px;
   padding-top: 12px;
@@ -36,7 +36,7 @@ export const SearchForm = styled.form`
 `;
 export const SearchButton = styled.button`
   width: 100px;
-  height: 48px;
+  height: 38px;
   margin: 2px 5px;
   cursor: pointer;
   outline: none;

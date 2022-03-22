@@ -3,8 +3,8 @@ import styled from '@emotion/styled';
 export const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 35px;
+  margin-top: 25px;
+  margin-bottom: 25px;
 `;
 
 export const ButtonLoadMore = styled.button`
