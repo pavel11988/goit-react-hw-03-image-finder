@@ -86,27 +86,25 @@ export default class App extends Component {
 
   fetchToApi() {
     const nextSearchQuery = this.state.searchQuery;
-    setTimeout(() => {
-      imageApi
-        .fetchOfQuery()
-        .then(newImagesArray => {
-          console.log(newImagesArray);
-          //Проверяем массив, который нам вернул API на пустоту:
-          if (newImagesArray.length !== 0) {
-            return this.setState(prevState => ({
-              imagesArray: [...prevState.imagesArray, ...newImagesArray],
-              status: 'resolved',
-            }));
-          }
-          //Если API вернул пустой массив - делаем ошибку:
-          return Promise.reject(
-            new Error(
-              `No images found for your query "${nextSearchQuery.trim()}"`
-            )
-          );
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
-    }, 500);
+    imageApi
+      .fetchOfQuery()
+      .then(newImagesArray => {
+        console.log(newImagesArray);
+        //Проверяем массив, который нам вернул API на пустоту:
+        if (newImagesArray.length !== 0) {
+          return this.setState(prevState => ({
+            imagesArray: [...prevState.imagesArray, ...newImagesArray],
+            status: 'resolved',
+          }));
+        }
+        //Если API вернул пустой массив - делаем ошибку:
+        return Promise.reject(
+          new Error(
+            `No images found for your query "${nextSearchQuery.trim()}"`
+          )
+        );
+      })
+      .catch(error => this.setState({ error, status: 'rejected' }));
   }
 
   render() {
