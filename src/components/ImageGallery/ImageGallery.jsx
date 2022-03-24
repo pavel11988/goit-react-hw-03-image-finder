@@ -6,12 +6,12 @@ const ImageGallery = ({ getUrlLarge, imagesArray }) => {
   return (
     <ImageGalleryContainer>
       <ImageGalleryList className="gallery">
-        {imagesArray.map(item => (
+        {imagesArray.map(({ id, webformatURL, largeImageURL, tags }) => (
           <ImageGalleryItem
-            key={item.id}
-            webformatURL={item.webformatURL}
-            large={item.largeImageURL}
-            tags={item.tags}
+            key={id}
+            webformatURL={webformatURL}
+            large={largeImageURL}
+            tags={tags}
             getUrlLarge={getUrlLarge}
           />
         ))}

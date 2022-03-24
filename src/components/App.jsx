@@ -108,43 +108,35 @@ export default class App extends Component {
 
   render() {
     const { showModal, status, imagesArray, error, largeImage } = this.state;
-    let gallery;
 
-    if (status === 'idle') {
-      gallery = <Idle>Please, enter your request.</Idle>;
-    }
-
-    if (status === 'pending') {
-      if (imagesArray.length !== 0) gallery = <Loader />;
-
-      gallery = (
-        <ImageGalleryContainer>
-          <ImageGallery
-            getUrlLarge={this.toggleModal}
-            imagesArray={imagesArray}
-          />
-          <Loader />
-        </ImageGalleryContainer>
-      );
-    }
-
-    if (status === 'rejected') {
-      gallery = <ImageError message={error.message} />;
-    }
-
-    if (status === 'resolved') {
-      gallery = (
-        <ImageGallery
-          getUrlLarge={this.toggleModal}
-          imagesArray={imagesArray}
-        />
-      );
-    }
+    const idle = status === 'idle';
+    const pendingNextSearch = status === 'pending' && imagesArray.length === 0;
+    const pendingLoadMore = status === 'pending' && imagesArray.length !== 0;
+    const resolved = status === 'resolved';
+    const rejected = status === 'rejected';
 
     return (
       <AppContainer>
         <Searchbar onSubmit={this.handleSearchQuerySubmit} />
-        {gallery}
+        {idle && <Idle>Please, enter your request.</Idle>}
+        {pendingNextSearch && <Loader />}
+        {pendingLoadMore && (
+          <ImageGalleryContainer>
+            <ImageGallery
+              getUrlLarge={this.toggleModal}
+              imagesArray={imagesArray}
+            />
+            <Loader />
+          </ImageGalleryContainer>
+        )}
+        {resolved && (
+          <ImageGallery
+            getUrlLarge={this.toggleModal}
+            imagesArray={imagesArray}
+          />
+        )}
+        {rejected && <ImageError message={error.message} />}
+
         {imageApi.notLastPage() && status === 'resolved' && (
           <Button loadMore={this.loadMore} />
         )}
